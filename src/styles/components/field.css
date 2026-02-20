@@ -27,10 +27,7 @@
   border: var(--border);
   border-radius: var(--border-radius);
 
-  &:hover,
-  &:focus {
-    border-color: var(--color-dark-2);
-  }
+ 
 
   &:focus {
     background-color: var(--color-gray-1);
