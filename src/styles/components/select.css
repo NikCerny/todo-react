@@ -1,0 +1,10 @@
+select {
+    border: var(--border);
+    border-radius: var(--border-radius);
+    padding: 10px;
+    
+}
+
+select:focus {
+  outline: none;
+}
