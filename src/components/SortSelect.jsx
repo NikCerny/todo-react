@@ -1,4 +1,9 @@
-const SortSelect = ({ sortType, setSortType }) => {
+import { useContext } from "react";
+import { TasksContext } from "./context/TasksContextDef";
+
+const SortSelect = () => {
+  const { sortType, setSortType } = useContext(TasksContext);
+  
   return (
     <select
       className="field todo__field"
@@ -9,8 +14,8 @@ const SortSelect = ({ sortType, setSortType }) => {
     >
       <option value="byDate">by date</option>
       <option value="byCompleted">by completed</option>
-      <option value="ByInCompleted">by incompleted</option>
-      <option value="ByTitle">by title</option>
+      <option value="byInCompleted">by incompleted</option>
+      <option value="byTitle">by title</option>
     </select>
   );
 };
