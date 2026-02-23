@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import useTasksLocalStorage from "./useTasksLocalStorage";
 
+
 const useTasks = () => {
-  const tasksIni = [
-    { id: "task-1", title: "example1", isDone: false },
-    { id: "task-2", title: "example 2", isDone: true },
-  ];
 
-  const {savedTasks, saveTask, savedSortType, setNewSortType} = useTasksLocalStorage();
-
-  const [tasks, setTasks] = useState(() => savedTasks ?? tasksIni);
+  const {savedSortType, setNewSortType} = useTasksLocalStorage();
+  const [tasks, setTasks] = useState([]);
 
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,49 +16,60 @@ const useTasks = () => {
   const deleteAllTasks = useCallback(() => {
     const isConfirmed = confirm("Are you sure you want to delete all tasks?");
     if (isConfirmed) {
-      setTasks([]);
+        Promise.all(
+            tasks.map(({id}) => fetch(`http://localhost:3001/tasks/${id}`, {method: 'DELETE'}))
+        ).then(() => setTasks([]));
     }
-  }, []);
+  }, [tasks]);
 
   const deleteTask = useCallback(
     (taskId) => {
-      setTasks(tasks.filter((task) => task.id !== taskId));
+      fetch(`http://localhost:3001/tasks/${taskId}`, {method: 'DELETE'})
+        .then(() => setTasks(tasks.filter((task) => task.id !== taskId)))
     },
     [tasks],
   );
 
   const toggleTaskComplete = useCallback(
     (taskId, isDone) => {
-      setTasks(
-        tasks.map((task) => {
-          if (task.id === taskId) {
-            return { ...task, isDone };
-          }
-          return task;
-        }),
-      );
+      fetch(`http://localhost:3001/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json' },
+        body: JSON.stringify({isDone}),
+      })
+        .then(() => {
+            setTasks(
+                tasks.map((task) => {
+                    if (task.id === taskId) {
+                        return { ...task, isDone };
+                    }
+                    return task;
+                }),
+            );
+        });
     },
     [tasks],
   );
 
-  const addTask = useCallback(() => {
-    if (newTaskTitle.trim().length > 0) {
+  const addTask = useCallback((title) => {
       const newTask = {
-        id: crypto?.randomUUID() ?? Date.now().toString(),
-        title: newTaskTitle,
+        title,
         isDone: false,
       };
+      fetch('http://localhost:3001/tasks', {
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json' }, 
+        body: JSON.stringify(newTask),
+      })
+        .then((response) => response.json())
+        .then((addedTask) => {
+            setTasks((prevTasks) => [...prevTasks, addedTask]);
+            setNewTaskTitle("");
+            newTaskInputRef.current.focus(); 
+        })
+  }, []);
 
-      setTasks((prevTasks) => [...prevTasks, newTask]);
-      setNewTaskTitle("");
-      // setSearchQuery(""); // empty filter after Add click
-      newTaskInputRef.current.focus(); // focus field after Add click
-    }
-  }, [newTaskTitle]);
 
-  useEffect(() => {
-      saveTask(tasks)
-    }, [tasks, saveTask]);
 
   useEffect(() => {
     setNewSortType(sortType)
@@ -70,6 +77,8 @@ const useTasks = () => {
 
   useEffect(() => {
     newTaskInputRef.current.focus();
+
+    fetch('http://localhost:3001/tasks').then((response) => response.json()).then(setTasks)
   }, []);
 
   const filteredAndSortedTasks = useMemo(() => {
