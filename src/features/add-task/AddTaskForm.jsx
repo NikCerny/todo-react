@@ -4,15 +4,15 @@ import { useContext, useState } from 'react';
 import { TasksContext } from '@/entitites/todo';
 
 const AddTaskForm = ({ styles }) => {
-  const { addTask, newTaskTitle, setNewTaskTitle, newTaskInputRef } =
-    useContext(TasksContext);
+  const { addTask, newTaskInputRef } = useContext(TasksContext);
   const onSubmit = (event) => {
     event.preventDefault();
     if (!isNewTaskTitleEmpty) {
-      addTask(trimNewTaskTitle);
+      addTask(trimNewTaskTitle, () => setNewTaskTitle(''));
     }
   };
 
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [error, setError] = useState('');
 
   const trimNewTaskTitle = newTaskTitle.trim();

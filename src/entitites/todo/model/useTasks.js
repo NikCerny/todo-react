@@ -6,7 +6,6 @@ const useTasks = () => {
   const { savedSortType, setNewSortType } = useTasksLocalStorage();
   const [tasks, setTasks] = useState([]);
 
-  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState(() => savedSortType ?? 'byDate');
   const newTaskInputRef = useRef(null);
@@ -49,7 +48,7 @@ const useTasks = () => {
     [tasks]
   );
 
-  const addTask = useCallback((title) => {
+  const addTask = useCallback((title, callBackAfterAdding) => {
     const newTask = {
       title,
       isDone: false,
@@ -57,7 +56,7 @@ const useTasks = () => {
 
     tasksAPI.add(newTask).then((addedTask) => {
       setTasks((prevTasks) => [...prevTasks, addedTask]);
-      setNewTaskTitle('');
+      callBackAfterAdding();
       setSearchQuery('');
       newTaskInputRef.current.focus();
       setAppearingTaskId(addedTask.id);
@@ -106,8 +105,6 @@ const useTasks = () => {
     deleteTask,
     deleteAllTasks,
     toggleTaskComplete,
-    newTaskTitle,
-    setNewTaskTitle,
     searchQuery,
     setSearchQuery,
     newTaskInputRef,
