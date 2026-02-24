@@ -72,10 +72,7 @@ const useTasks = () => {
 
   useEffect(() => {
     newTaskInputRef.current.focus();
-
-    fetch('http://localhost:3001/tasks')
-      .then((response) => response.json())
-      .then(setTasks);
+    tasksAPI.getAll().then(setTasks);
   }, []);
 
   const filteredAndSortedTasks = useMemo(() => {
